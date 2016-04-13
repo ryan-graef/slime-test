@@ -4,7 +4,7 @@ var game;
 
 document.addEventListener("DOMContentLoaded", function(event){
 	//create a new game and run it
-	game = new Phaser.Game(WIDTH, HEIGHT, Phaser.OPENGL, 'game');
+	game = new Phaser.Game(WIDTH, HEIGHT, Phaser.AUTO, 'game');
 
 	//add the game states
 	game.state.add('StartupState', new StartupState());
