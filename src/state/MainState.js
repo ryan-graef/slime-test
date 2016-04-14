@@ -1,7 +1,7 @@
 MainState = function(){ }
 
 MainState.prototype = {
-    slimePointCount: 50,
+    slimePointCount: 30,
     slimePoints: [],
     slimeSprings: [],
     springLineBmd: null,
@@ -36,6 +36,12 @@ MainState.prototype = {
         bmd2.dirty = true;
         game.cache.addBitmapData('rect', bmd2);
 
+        var bmd3 = game.add.bitmapData(game.width, game.height);
+        bmd3.context.fillStyle = '#00cc00';
+        bmd3.dirty = true;
+        game.cache.addBitmapData('slime', bmd3);
+        var slimeSprite = game.add.sprite(0, 0, bmd3);
+
         var platform = game.add.sprite(0, 0, bmd2);
         platform.anchor.setTo(0, 0);
         platform.x = game.world.centerX-bmd2.width/2
@@ -59,9 +65,27 @@ MainState.prototype = {
             this.springLineBmd.context.beginPath();
             this.springLineBmd.context.moveTo(spring.data.bodyA.position[0]*-20, spring.data.bodyA.position[1]*-20);
             this.springLineBmd.context.lineTo(spring.data.bodyB.position[0]*-20, spring.data.bodyB.position[1]*-20);
-            this.springLineBmd.context.stroke();
+            //this.springLineBmd.context.stroke();
         }, this);
         this.springLineBmd.dirty = true;
+
+        var slimeBmd = game.cache.getBitmapData('slime');
+        slimeBmd.context.clearRect(0, 0, slimeBmd.width, slimeBmd.height);
+        var grd = slimeBmd.context.createRadialGradient(this.slimeCenterPoint.x, this.slimeCenterPoint.y, 25, this.slimeCenterPoint.x, this.slimeCenterPoint.y, 100);
+        grd.addColorStop(0, '#00CC00');
+        grd.addColorStop(1, '#002200');
+        slimeBmd.context.fillStyle = grd;
+        slimeBmd.context.beginPath();
+        slimeBmd.context.moveTo(this.slimePoints[0].x, this.slimePoints[0].y);
+        for(var i = 1; i < this.slimePoints.length; i++){
+            var point = this.slimePoints[(i + 1) % (this.slimePoints.length)];
+
+            
+            slimeBmd.context.lineTo(point.x, point.y);
+        }
+        slimeBmd.context.closePath();
+        slimeBmd.context.fill();
+        slimeBmd.dirty = true;
 
 
         if(this.cursorKeys.up.isDown){
@@ -96,6 +120,7 @@ MainState.prototype = {
             game.physics.p2.enable(point);
             point.body.setCollisionGroup(this.slimeCollisionGroup);
             point.body.collides([this.worldCollisionGroup]);
+            point.alpha = 0;
             point.body.collideWorldBounds = true;
 
             this.slimePoints.push(point);
@@ -105,7 +130,10 @@ MainState.prototype = {
         this.slimeCenterPoint.width *= 2;
         this.slimeCenterPoint.height *= 2;
         game.physics.p2.enable(this.slimeCenterPoint);
-        this.slimeCenterPoint.collideWorldBounds = true;
+        this.slimeCenterPoint.body.setCollisionGroup(this.slimeCollisionGroup);
+        this.slimeCenterPoint.alpha = 0;
+        this.slimeCenterPoint.body.collides([this.worldCollisionGroup]);
+        this.slimeCenterPoint.body.collideWorldBounds = true;
 
         for(var i = 0; i < this.slimePoints.length; i++){
             var connectTo = [];
